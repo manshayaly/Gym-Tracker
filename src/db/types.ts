@@ -13,3 +13,26 @@ export type Exercise = {
   created_at: string;
   updated_at: string;
 };
+
+export type Workout = {
+  id: string;
+  /** Local calendar day, "YYYY-MM-DD". */
+  date: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type WorkoutSet = {
+  id: string;
+  workout_id: string;
+  exercise_id: string;
+  /** Always kilograms — convert only for display. */
+  weight_kg: number;
+  reps: number;
+  /** 1, 2, 3… per exercise within a workout. */
+  set_number: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};

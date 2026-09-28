@@ -42,6 +42,35 @@ const MIGRATIONS: Migration[] = [
       await insert.finalizeAsync();
     }
   },
+
+  // 2: workouts and logged sets
+  async (db) => {
+    await db.execAsync(`
+      CREATE TABLE workouts (
+        id         TEXT PRIMARY KEY NOT NULL,
+        date       TEXT NOT NULL CHECK (date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        deleted_at TEXT
+      );
+      -- One active workout per day; a deleted one doesn't block a new one.
+      CREATE UNIQUE INDEX workouts_active_date ON workouts (date) WHERE deleted_at IS NULL;
+
+      CREATE TABLE workout_sets (
+        id          TEXT PRIMARY KEY NOT NULL,
+        workout_id  TEXT NOT NULL REFERENCES workouts (id),
+        exercise_id TEXT NOT NULL REFERENCES exercises (id),
+        weight_kg   REAL NOT NULL CHECK (weight_kg >= 0),
+        reps        INTEGER NOT NULL CHECK (typeof(reps) = 'integer' AND reps > 0),
+        set_number  INTEGER NOT NULL CHECK (typeof(set_number) = 'integer' AND set_number > 0),
+        created_at  TEXT NOT NULL,
+        updated_at  TEXT NOT NULL,
+        deleted_at  TEXT
+      );
+      CREATE INDEX workout_sets_workout ON workout_sets (workout_id);
+      CREATE INDEX workout_sets_exercise ON workout_sets (exercise_id);
+    `);
+  },
 ];
 
 /** Brings the database up to the latest version. Runs every time the app opens. */

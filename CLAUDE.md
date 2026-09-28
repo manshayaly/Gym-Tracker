@@ -34,6 +34,15 @@ routines/programs, rest timers, progress photos.
   Converting to lb is purely a display concern — a future settings toggle
   will convert at the screen level. Never store a unit alongside a weight or
   store lb values; keep conversion in one shared helper.
+- **Deletes are soft:** user-deletable tables have a nullable `deleted_at`
+  timestamp. Deleting sets it (and bumps `updated_at`); every read query
+  filters `deleted_at IS NULL`. Rows are never physically removed, so a future
+  sync can propagate deletions.
+- **Dates vs timestamps:** calendar days (e.g. a workout's date) are the
+  phone's *local* date as `YYYY-MM-DD`; `created_at`/`updated_at`/`deleted_at`
+  are UTC ISO 8601 timestamps. Never derive a local date from `toISOString()`.
+- **One workout per local calendar day**, created automatically when the
+  first set of the day is saved.
 
 ## Stack
 - Expo (React Native) + TypeScript, Expo Router for navigation.
