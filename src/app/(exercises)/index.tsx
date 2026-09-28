@@ -1,7 +1,7 @@
-import { Stack, useTheme } from 'expo-router';
+import { Link, Stack, useTheme } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { FilterChips } from '@/components/filter-chips';
 import { getAllExercises } from '@/db/exercises';
@@ -64,12 +64,15 @@ export default function ExercisesScreen() {
           <View style={[styles.separator, { backgroundColor: colors.border }]} />
         )}
         renderItem={({ item }) => (
-          <View style={styles.row}>
-            <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
-            <Text style={[styles.details, { color: colors.text }]}>
-              {MUSCLE_GROUP_LABELS[item.muscle_group]} · {EQUIPMENT_LABELS[item.equipment]}
-            </Text>
-          </View>
+          <Link href={{ pathname: '/exercise/[id]', params: { id: item.id } }} asChild>
+            <Pressable
+              style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.border }]}>
+              <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
+              <Text style={[styles.details, { color: colors.text }]}>
+                {MUSCLE_GROUP_LABELS[item.muscle_group]} · {EQUIPMENT_LABELS[item.equipment]}
+              </Text>
+            </Pressable>
+          </Link>
         )}
       />
     </>
