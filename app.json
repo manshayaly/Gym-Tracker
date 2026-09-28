@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "gym-tracker",
+    "name": "Gym Tracker",
     "slug": "gym-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,7 +8,9 @@
     "scheme": "gymtracker",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.mansourhayaly.gymtracker",
+      "supportsTablet": false
     },
     "android": {
       "adaptiveIcon": {

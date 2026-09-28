@@ -1,1 +1,51 @@
+# Gym Tracker
+
+## What this app is
+An iOS app for logging gym workouts and tracking strength progress over time.
+The core loop: pick an exercise → log weight and reps → see if you're getting
+stronger over weeks/months. Personal project for now, may become a real
+product later — so keep the data model clean even though there's no backend yet.
+
+## MVP scope (build only this first)
+1. **Exercise library**: searchable list of ~150-200 common exercises, each
+   tagged with a muscle group (chest, back, legs, shoulders, arms, core) and
+   equipment (barbell, dumbbell, cable, machine, bodyweight). Seed this data
+   once, store it locally.
+2. **Logging a set**: user searches/browses to an exercise, enters weight and
+   reps, saves it as part of today's workout. Show their last performance on
+   that exact exercise right on the entry screen (this is what drives
+   progressive overload).
+3. **Workout history**: list of past workouts, each showing exercises/sets done.
+4. **Progress view**: per-exercise chart of top weight over time, and flag new
+   personal records.
+5. **Bodyweight log**: simple date + weight entries with a trend line.
+
+Explicitly NOT in MVP: user accounts, cloud sync, social features, custom
+routines/programs, rest timers, progress photos.
+
+## Data model
+- Data lives locally on-device (SQLite via expo-sqlite), no backend yet.
+- Every record gets a UUID and an `updated_at` timestamp, even though we don't
+  sync yet — this makes adding sync later much less painful.
+- Core entities: Exercise (id, name, muscle_group, equipment), Workout (id,
+  date), WorkoutSet (id, workout_id, exercise_id, weight, reps, set_number),
+  BodyweightEntry (id, date, weight).
+- **Units:** all weights (lifted and bodyweight) are stored in **kg**, always.
+  Converting to lb is purely a display concern — a future settings toggle
+  will convert at the screen level. Never store a unit alongside a weight or
+  store lb values; keep conversion in one shared helper.
+
+## Stack
+- Expo (React Native) + TypeScript, Expo Router for navigation.
+- expo-sqlite for local storage.
+- A charting library for the progress view (recommend Claude Code pick one
+  compatible with Expo — e.g. victory-native or react-native-svg based).
+
+## How we work
+- Plan before building: for any new feature, outline the approach first,
+  I'll approve it, then build.
+- Build one small piece at a time. After each working piece, commit it with git.
+- I have zero coding experience — explain what you're doing in plain terms,
+  and flag anything I need to test manually on my phone.
+
 @AGENTS.md
