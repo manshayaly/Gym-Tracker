@@ -9,8 +9,10 @@ import {
   saveBodyweight,
   withChanges,
 } from '@/db/bodyweight';
+import { BodyweightChart } from '@/components/bodyweight-chart';
 import type { BodyweightEntry } from '@/db/types';
 import { formatDayLabel, localDate } from '@/lib/dates';
+import { buildChartPoints } from '@/lib/trend';
 import { formatWeight, formatWeightChange, parseWeightInput, weightToInput } from '@/lib/units';
 
 export default function BodyScreen() {
@@ -111,6 +113,16 @@ export default function BodyScreen() {
             </Pressable>
           </View>
           {error && <Text style={[styles.error, { color: colors.notification }]}>{error}</Text>}
+          {entries && entries.length >= 2 && (
+            <View style={styles.chart}>
+              <BodyweightChart points={buildChartPoints(entries)} />
+            </View>
+          )}
+          {entries && entries.length === 1 && (
+            <Text style={[styles.hint, { color: colors.text }]}>
+              Log your weight on another day to see your chart.
+            </Text>
+          )}
           {entries && entries.length > 0 && (
             <Text style={[styles.hint, { color: colors.text }]}>
               Press and hold an entry to delete it
@@ -184,6 +196,9 @@ const styles = StyleSheet.create({
   },
   error: {
     fontSize: 15,
+  },
+  chart: {
+    marginTop: 16,
   },
   hint: {
     fontSize: 13,

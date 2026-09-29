@@ -66,3 +66,15 @@ export function groupByMonth<T extends { date: string }>(items: readonly T[]) {
   }
   return groups;
 }
+
+/** The "YYYY-MM-DD" local day `days` days after `day` (negative goes back). */
+export function addDays(day: string, days: number) {
+  const [y, m, d] = day.split('-').map(Number);
+  return localDate(new Date(y, m - 1, d + days));
+}
+
+/** Compact label for a "YYYY-MM-DD" local day, e.g. "Sep 24" — for chart axes. */
+export function formatShortDayLabel(day: string) {
+  const [y, m, d] = day.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
