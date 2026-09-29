@@ -1,12 +1,14 @@
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { WorkoutExerciseCard } from '@/components/workout-exercise-card';
 import { getWorkoutDetailForDate, type WorkoutDetail } from '@/db/history';
 import { formatHomeDate, localDate } from '@/lib/dates';
+import { getPendingExercises, removePendingExercise } from '@/lib/pending-exercises';
 import { spacing, type, useAppColors } from '@/theme';
 
 export default function WorkoutScreen() {
@@ -16,11 +18,13 @@ export default function WorkoutScreen() {
   // undefined = still loading, null = nothing logged today yet
   const [workout, setWorkout] = useState<WorkoutDetail | null | undefined>(undefined);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [pending, setPending] = useState(getPendingExercises(localDate()));
 
   const load = useCallback(() => {
     const date = localDate();
     setToday(date);
     setRefreshKey((key) => key + 1);
+    setPending(getPendingExercises(date));
     getWorkoutDetailForDate(db, date).then(setWorkout);
   }, [db]);
 
@@ -28,6 +32,20 @@ export default function WorkoutScreen() {
   useFocusEffect(load);
 
   if (workout === undefined) return null;
+
+  // Logged exercises first (in the order done), then ones added but not yet logged.
+  const logged = workout?.exercises ?? [];
+  const cards = [
+    ...logged.map((e) => ({ exerciseId: e.exerciseId, name: e.name, isPending: false })),
+    ...pending
+      .filter((p) => !logged.some((e) => e.exerciseId === p.exerciseId))
+      .map((p) => ({ ...p, isPending: true })),
+  ];
+
+  function remove(exerciseId: string) {
+    removePendingExercise(today, exerciseId);
+    setPending(getPendingExercises(today));
+  }
 
   return (
     <ScrollView
@@ -39,24 +57,30 @@ export default function WorkoutScreen() {
       contentContainerStyle={styles.content}>
       <Label>{formatHomeDate(today)}</Label>
 
-      {workout && workout.exercises.length > 0 ? (
-        workout.exercises.map((exercise) => (
+      {cards.length > 0 ? (
+        cards.map((card) => (
           <WorkoutExerciseCard
-            key={exercise.exerciseId}
-            exerciseId={exercise.exerciseId}
-            name={exercise.name}
+            key={card.exerciseId}
+            exerciseId={card.exerciseId}
+            name={card.name}
             refreshKey={refreshKey}
             onChange={load}
+            onRemove={card.isPending ? () => remove(card.exerciseId) : undefined}
           />
         ))
       ) : (
         <View style={styles.empty}>
           <Text style={[type.body, { color: colors.textMuted }]}>
-            No exercises yet today. Log a set from the Exercises tab and it shows up here —
-            adding exercises from this screen comes next.
+            No exercises yet. Add your first one to start logging.
           </Text>
         </View>
       )}
+
+      <Button
+        variant="secondary"
+        label="+ Add exercise"
+        onPress={() => router.push('/add-exercise')}
+      />
     </ScrollView>
   );
 }
@@ -64,9 +88,10 @@ export default function WorkoutScreen() {
 const styles = StyleSheet.create({
   content: {
     padding: spacing.md,
+    paddingBottom: spacing.xl,
     gap: spacing.md,
   },
   empty: {
-    paddingVertical: spacing.xl,
+    paddingVertical: spacing.lg,
   },
 });

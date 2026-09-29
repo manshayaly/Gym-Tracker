@@ -23,13 +23,21 @@ type Props = {
   refreshKey?: number;
   /** Called after a set is saved or deleted, so the screen can refresh. */
   onChange?: () => void;
+  /** When given, a card with no sets yet shows a Remove option. */
+  onRemove?: () => void;
 };
 
 /**
  * One exercise inside today's workout: last time, today's sets, and a
  * weight/reps row to log the next set without leaving the workout.
  */
-export function WorkoutExerciseCard({ exerciseId, name, refreshKey, onChange }: Props) {
+export function WorkoutExerciseCard({
+  exerciseId,
+  name,
+  refreshKey,
+  onChange,
+  onRemove,
+}: Props) {
   const db = useSQLiteContext();
   const colors = useAppColors();
   const [sets, setSets] = useState<WorkoutSet[]>([]);
@@ -117,7 +125,14 @@ export function WorkoutExerciseCard({ exerciseId, name, refreshKey, onChange }: 
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <Text style={[type.title, { color: colors.text }]}>{name}</Text>
+      <View style={styles.titleRow}>
+        <Text style={[type.title, styles.title, { color: colors.text }]}>{name}</Text>
+        {onRemove && sets.length === 0 && (
+          <Pressable onPress={onRemove} accessibilityRole="button" hitSlop={8}>
+            <Label style={{ color: colors.text }}>Remove</Label>
+          </Pressable>
+        )}
+      </View>
 
       {lastTime.length > 0 && (
         <View style={styles.lastTime}>
@@ -181,6 +196,14 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  title: {
+    flex: 1,
   },
   lastTime: {
     gap: 2,
