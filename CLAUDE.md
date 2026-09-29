@@ -62,4 +62,10 @@ routines/programs, rest timers, progress photos.
 - I have zero coding experience — explain what you're doing in plain terms,
   and flag anything I need to test manually on my phone.
 
+## Design
+The visual style follows DESIGN.md (a web design system; see the
+"App adaptation" decisions below once approved). Don't use the source
+brand's name, logo, or proprietary font in the app.
+
+@DESIGN.md
 @AGENTS.md
