@@ -28,3 +28,27 @@ export function formatDayLabel(day: string, now: Date = new Date()) {
     year: y === now.getFullYear() ? undefined : 'numeric',
   });
 }
+
+/** Month heading for a "YYYY-MM-DD" local day, e.g. "September 2026". */
+export function formatMonthLabel(day: string) {
+  const [y, m] = day.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+}
+
+/**
+ * Splits date-sorted items into consecutive groups by calendar month, keeping
+ * the input order, e.g. for list section headers.
+ */
+export function groupByMonth<T extends { date: string }>(items: readonly T[]) {
+  const groups: { title: string; data: T[] }[] = [];
+  let currentMonth = '';
+  for (const item of items) {
+    const month = item.date.slice(0, 7); // "YYYY-MM"
+    if (month !== currentMonth) {
+      groups.push({ title: formatMonthLabel(item.date), data: [] });
+      currentMonth = month;
+    }
+    groups[groups.length - 1].data.push(item);
+  }
+  return groups;
+}

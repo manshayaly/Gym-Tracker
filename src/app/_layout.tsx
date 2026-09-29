@@ -16,6 +16,10 @@ export default function RootLayout() {
             <NativeTabs.Trigger.Label>Exercises</NativeTabs.Trigger.Label>
             <NativeTabs.Trigger.Icon sf="dumbbell.fill" />
           </NativeTabs.Trigger>
+          <NativeTabs.Trigger name="(history)">
+            <NativeTabs.Trigger.Label>History</NativeTabs.Trigger.Label>
+            <NativeTabs.Trigger.Icon sf="clock.arrow.circlepath" />
+          </NativeTabs.Trigger>
         </NativeTabs>
       </SQLiteProvider>
     </ThemeProvider>
