@@ -36,3 +36,14 @@ export type WorkoutSet = {
   updated_at: string;
   deleted_at: string | null;
 };
+
+export type BodyweightEntry = {
+  id: string;
+  /** Local calendar day, "YYYY-MM-DD". */
+  date: string;
+  /** Always kilograms — convert only for display. */
+  weight_kg: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};

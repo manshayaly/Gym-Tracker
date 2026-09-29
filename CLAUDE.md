@@ -20,7 +20,10 @@ product later — so keep the data model clean even though there's no backend ye
    (heaviest weight; ties → most reps; 0 kg bodyweight-only → most reps).
    No Progress tab, per-exercise charts, or PR badges — the user decided
    these aren't needed.
-5. **Bodyweight log**: simple date + weight entries with a trend line.
+5. **Bodyweight log**: simple date + weight entries, one per day (saving
+   again the same day replaces it), today only, list with change from the
+   previous entry, and a line chart of daily weights with a smoothed trend
+   line (press and drag to read a day's value).
 
 Explicitly NOT in MVP: user accounts, cloud sync, social features, custom
 routines/programs, rest timers, progress photos.
@@ -49,8 +52,8 @@ routines/programs, rest timers, progress photos.
 ## Stack
 - Expo (React Native) + TypeScript, Expo Router for navigation.
 - expo-sqlite for local storage.
-- A charting library for the progress view (recommend Claude Code pick one
-  compatible with Expo — e.g. victory-native or react-native-svg based).
+- victory-native (Skia-based, works in Expo Go) for the bodyweight chart —
+  the only chart in the MVP; exercises deliberately have no charts.
 
 ## How we work
 - Plan before building: for any new feature, outline the approach first,

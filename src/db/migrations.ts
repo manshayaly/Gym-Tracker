@@ -71,6 +71,23 @@ const MIGRATIONS: Migration[] = [
       CREATE INDEX workout_sets_exercise ON workout_sets (exercise_id);
     `);
   },
+
+  // 3: bodyweight log
+  async (db) => {
+    await db.execAsync(`
+      CREATE TABLE bodyweight_entries (
+        id         TEXT PRIMARY KEY NOT NULL,
+        date       TEXT NOT NULL CHECK (date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
+        weight_kg  REAL NOT NULL CHECK (weight_kg > 0),
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        deleted_at TEXT
+      );
+      -- One active entry per day; saving again the same day updates it.
+      CREATE UNIQUE INDEX bodyweight_entries_active_date
+        ON bodyweight_entries (date) WHERE deleted_at IS NULL;
+    `);
+  },
 ];
 
 /** Brings the database up to the latest version. Runs every time the app opens. */
