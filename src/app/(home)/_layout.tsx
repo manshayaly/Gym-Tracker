@@ -8,6 +8,7 @@ export default function HomeLayout() {
       {/* Home is a clean page: logo, date and Start — no header bar. */}
       <Stack.Screen name="index" options={{ headerShown: false, title: 'Home' }} />
       <Stack.Screen name="workout" options={{ title: "Today's workout" }} />
+      <Stack.Screen name="workout-summary/[id]" options={{ title: '' }} />
       {/* Slides up as a sheet; swipe down to close without adding anything. */}
       <Stack.Screen
         name="add-exercise"

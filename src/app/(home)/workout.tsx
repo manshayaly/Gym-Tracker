@@ -1,14 +1,19 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { WorkoutExerciseCard } from '@/components/workout-exercise-card';
 import { getWorkoutDetailForDate, type WorkoutDetail } from '@/db/history';
+import { endWorkout } from '@/db/workouts';
 import { formatHomeDate, localDate } from '@/lib/dates';
-import { getPendingExercises, removePendingExercise } from '@/lib/pending-exercises';
+import {
+  clearPendingExercises,
+  getPendingExercises,
+  removePendingExercise,
+} from '@/lib/pending-exercises';
 import { spacing, type, useAppColors } from '@/theme';
 
 export default function WorkoutScreen() {
@@ -41,6 +46,22 @@ export default function WorkoutScreen() {
       .filter((p) => !logged.some((e) => e.exerciseId === p.exerciseId))
       .map((p) => ({ ...p, isPending: true })),
   ];
+
+  function confirmEnd() {
+    Alert.alert('End workout?', undefined, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'End',
+        onPress: async () => {
+          const date = localDate();
+          // Nothing logged means there's no workout to end — just leave.
+          if (logged.length > 0) await endWorkout(db, date);
+          clearPendingExercises(date);
+          router.back();
+        },
+      },
+    ]);
+  }
 
   function remove(exerciseId: string) {
     removePendingExercise(today, exerciseId);
@@ -81,6 +102,9 @@ export default function WorkoutScreen() {
         label="+ Add exercise"
         onPress={() => router.push('/add-exercise')}
       />
+      <View style={styles.end}>
+        <Button label="End workout" onPress={confirmEnd} />
+      </View>
     </ScrollView>
   );
 }
@@ -93,5 +117,8 @@ const styles = StyleSheet.create({
   },
   empty: {
     paddingVertical: spacing.lg,
+  },
+  end: {
+    marginTop: spacing.lg,
   },
 });

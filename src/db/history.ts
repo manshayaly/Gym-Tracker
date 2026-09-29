@@ -86,16 +86,30 @@ export async function getWorkoutDetail(db: SQLiteDatabase, workoutId: string) {
   return detail;
 }
 
-/** How many exercises and sets were logged on one local day (zeros if none). */
+/**
+ * Today's status for Home: how many exercises and sets were logged on a local
+ * day, the workout's id, and whether "End workout" was pressed.
+ */
 export async function getDaySummary(db: SQLiteDatabase, date: string) {
-  const row = await db.getFirstAsync<{ exercise_count: number; set_count: number }>(
-    `SELECT COUNT(DISTINCT s.exercise_id) AS exercise_count, COUNT(s.id) AS set_count
-     FROM workout_sets s
-     JOIN workouts w ON w.id = s.workout_id
-     WHERE w.date = ? AND s.deleted_at IS NULL AND w.deleted_at IS NULL`,
+  const row = await db.getFirstAsync<{
+    workout_id: string | null;
+    ended_at: string | null;
+    exercise_count: number;
+    set_count: number;
+  }>(
+    `SELECT w.id AS workout_id, w.ended_at,
+            COUNT(DISTINCT s.exercise_id) AS exercise_count, COUNT(s.id) AS set_count
+     FROM workouts w
+     LEFT JOIN workout_sets s ON s.workout_id = w.id AND s.deleted_at IS NULL
+     WHERE w.date = ? AND w.deleted_at IS NULL`,
     date
   );
-  return { exerciseCount: row?.exercise_count ?? 0, setCount: row?.set_count ?? 0 };
+  return {
+    workoutId: row?.workout_id ?? null,
+    ended: !!row?.ended_at,
+    exerciseCount: row?.exercise_count ?? 0,
+    setCount: row?.set_count ?? 0,
+  };
 }
 
 /** The workout for one local day with its sets grouped by exercise, or null if none. */

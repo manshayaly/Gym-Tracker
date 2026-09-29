@@ -27,3 +27,9 @@ export function addPendingExercise(today: string, exercise: Pending) {
 export function removePendingExercise(today: string, exerciseId: string) {
   pending = getPendingExercises(today).filter((p) => p.exerciseId !== exerciseId);
 }
+
+/** Forgets all added-but-unlogged exercises for the day (e.g. on "End workout"). */
+export function clearPendingExercises(today: string) {
+  getPendingExercises(today);
+  pending = [];
+}

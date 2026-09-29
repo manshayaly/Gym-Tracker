@@ -14,9 +14,7 @@ export default function HomeScreen() {
   const db = useSQLiteContext();
   const colors = useAppColors();
   const [today, setToday] = useState(localDate());
-  const [summary, setSummary] = useState<{ exerciseCount: number; setCount: number } | null>(
-    null
-  );
+  const [summary, setSummary] = useState<Awaited<ReturnType<typeof getDaySummary>> | null>(null);
 
   const refresh = useCallback(() => {
     const date = localDate();
@@ -37,6 +35,8 @@ export default function HomeScreen() {
   }, [refresh]);
 
   const started = (summary?.setCount ?? 0) > 0;
+  const ended = started && !!summary?.ended;
+  const workoutId = summary?.workoutId;
 
   return (
     <ScrollView
@@ -49,15 +49,30 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.actions}>
+        {ended && (
+          <Label style={[styles.summary, styles.complete, { color: colors.text }]}>
+            Workout complete
+          </Label>
+        )}
         {started && summary && (
           <Label style={styles.summary}>
             {plural(summary.exerciseCount, 'exercise')} · {plural(summary.setCount, 'set')}
           </Label>
         )}
-        <Button
-          label={started ? 'Continue' : "Let's train"}
-          onPress={() => router.push('/workout')}
-        />
+        {ended && workoutId ? (
+          <Button
+            variant="secondary"
+            label="View workout"
+            onPress={() =>
+              router.push({ pathname: '/workout-summary/[id]', params: { id: workoutId } })
+            }
+          />
+        ) : (
+          <Button
+            label={started ? 'Continue' : "Let's train"}
+            onPress={() => router.push('/workout')}
+          />
+        )}
       </View>
     </ScrollView>
   );
@@ -88,5 +103,8 @@ const styles = StyleSheet.create({
   },
   summary: {
     textAlign: 'center',
+  },
+  complete: {
+    fontSize: 13,
   },
 });

@@ -28,12 +28,20 @@ export async function logSet(
   };
 
   await db.withExclusiveTransactionAsync(async (txn) => {
-    const workout = await txn.getFirstAsync<{ id: string }>(
-      'SELECT id FROM workouts WHERE date = ? AND deleted_at IS NULL',
+    const workout = await txn.getFirstAsync<{ id: string; ended_at: string | null }>(
+      'SELECT id, ended_at FROM workouts WHERE date = ? AND deleted_at IS NULL',
       input.date
     );
     if (workout) {
       set.workout_id = workout.id;
+      // One workout per day: logging after "End workout" reopens it.
+      if (workout.ended_at) {
+        await txn.runAsync(
+          'UPDATE workouts SET ended_at = NULL, updated_at = ? WHERE id = ?',
+          now,
+          workout.id
+        );
+      }
     } else {
       set.workout_id = newId();
       await txn.runAsync(
@@ -167,5 +175,17 @@ export function getPersonalBest(db: SQLiteDatabase, exerciseId: string) {
      ORDER BY s.weight_kg DESC, s.reps DESC, w.date ASC, s.created_at ASC
      LIMIT 1`,
     exerciseId
+  );
+}
+
+/** Marks the day's workout as ended ("End workout"). No-op if there is none or it's already ended. */
+export async function endWorkout(db: SQLiteDatabase, date: string) {
+  const now = nowTimestamp();
+  await db.runAsync(
+    `UPDATE workouts SET ended_at = ?, updated_at = ?
+     WHERE date = ? AND deleted_at IS NULL AND ended_at IS NULL`,
+    now,
+    now,
+    date
   );
 }

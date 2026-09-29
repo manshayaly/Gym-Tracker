@@ -73,7 +73,8 @@ live in one shared theme file — screens never hard-code them.
   #1c1f2a, cards #292b35, off-white text, and a lighter muted grey than the
   guide's (#595959 is unreadable on charcoal).
 - Red #ba0816 (pressed #8e0d25) **only** on primary actions (Save set,
-  Save weight). Selected chips/secondary emphasis use black (light) or
+  + Set, Save weight, Let's train/Continue, End workout — the user asked
+  for End workout in red). Selected chips/secondary emphasis use black (light) or
   off-white (dark). No emoji decorations (no 🏆).
 - 0px corners on buttons, inputs, cards, chips and tags.
 - Section titles, field labels and button text: 11–14px uppercase with

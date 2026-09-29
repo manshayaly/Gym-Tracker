@@ -88,6 +88,11 @@ const MIGRATIONS: Migration[] = [
         ON bodyweight_entries (date) WHERE deleted_at IS NULL;
     `);
   },
+
+  // 4: remember when a workout was ended with "End workout" (NULL = still open)
+  async (db) => {
+    await db.execAsync('ALTER TABLE workouts ADD COLUMN ended_at TEXT;');
+  },
 ];
 
 /** Brings the database up to the latest version. Runs every time the app opens. */

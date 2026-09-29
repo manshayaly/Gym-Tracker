@@ -21,6 +21,8 @@ export type Workout = {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  /** Set by "End workout"; cleared again if another set is logged that day. */
+  ended_at: string | null;
 };
 
 export type WorkoutSet = {
