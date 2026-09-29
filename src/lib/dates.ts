@@ -78,3 +78,12 @@ export function formatShortDayLabel(day: string) {
   const [y, m, d] = day.split('-').map(Number);
   return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
+
+/** Home screen date for a "YYYY-MM-DD" local day, e.g. "Tuesday · September 29". */
+export function formatHomeDate(day: string) {
+  const [y, m, d] = day.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const weekday = date.toLocaleDateString(undefined, { weekday: 'long' });
+  const monthDay = date.toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
+  return `${weekday} · ${monthDay}`;
+}

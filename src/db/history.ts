@@ -85,3 +85,15 @@ export async function getWorkoutDetail(db: SQLiteDatabase, workoutId: string) {
   }
   return detail;
 }
+
+/** How many exercises and sets were logged on one local day (zeros if none). */
+export async function getDaySummary(db: SQLiteDatabase, date: string) {
+  const row = await db.getFirstAsync<{ exercise_count: number; set_count: number }>(
+    `SELECT COUNT(DISTINCT s.exercise_id) AS exercise_count, COUNT(s.id) AS set_count
+     FROM workout_sets s
+     JOIN workouts w ON w.id = s.workout_id
+     WHERE w.date = ? AND s.deleted_at IS NULL AND w.deleted_at IS NULL`,
+    date
+  );
+  return { exerciseCount: row?.exercise_count ?? 0, setCount: row?.set_count ?? 0 };
+}

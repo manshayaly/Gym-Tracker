@@ -16,6 +16,10 @@ export default function RootLayout() {
         <NativeTabs
           tintColor={colors.text}
           labelStyle={{ fontFamily: FONT_FAMILY }}>
+          <NativeTabs.Trigger name="(home)">
+            <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+            <NativeTabs.Trigger.Icon sf="house.fill" />
+          </NativeTabs.Trigger>
           <NativeTabs.Trigger name="(exercises)">
             <NativeTabs.Trigger.Label>Exercises</NativeTabs.Trigger.Label>
             <NativeTabs.Trigger.Icon sf="dumbbell.fill" />
