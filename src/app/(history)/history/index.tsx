@@ -1,7 +1,7 @@
-import { useFocusEffect, useTheme } from 'expo-router';
+import { Link, useFocusEffect, useTheme } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
-import { SectionList, StyleSheet, Text, View } from 'react-native';
+import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 
 import { getWorkoutSummaries, type WorkoutSummary } from '@/db/history';
 import { formatDayLabel, groupByMonth } from '@/lib/dates';
@@ -43,15 +43,23 @@ export default function HistoryScreen() {
         <View style={[styles.separator, { backgroundColor: colors.border }]} />
       )}
       renderItem={({ item }) => (
-        <View style={styles.row}>
-          <Text style={[styles.date, { color: colors.text }]}>{formatDayLabel(item.date)}</Text>
-          <Text style={[styles.details, { color: colors.text }]}>
-            {plural(item.exerciseNames.length, 'exercise')} · {plural(item.setCount, 'set')}
-          </Text>
-          <Text numberOfLines={1} style={[styles.details, { color: colors.text }]}>
-            {item.exerciseNames.join(', ')}
-          </Text>
-        </View>
+        <Link href={{ pathname: '/history/[id]', params: { id: item.id } }} asChild>
+          <Pressable
+            style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.border }]}>
+            <View style={styles.rowText}>
+              <Text style={[styles.date, { color: colors.text }]}>
+                {formatDayLabel(item.date)}
+              </Text>
+              <Text style={[styles.details, { color: colors.text }]}>
+                {plural(item.exerciseNames.length, 'exercise')} · {plural(item.setCount, 'set')}
+              </Text>
+              <Text numberOfLines={1} style={[styles.details, { color: colors.text }]}>
+                {item.exerciseNames.join(', ')}
+              </Text>
+            </View>
+            <Text style={[styles.chevron, { color: colors.text }]}>›</Text>
+          </Pressable>
+        </Link>
       )}
     />
   );
@@ -71,9 +79,19 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   row: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    gap: 8,
+  },
+  rowText: {
+    flex: 1,
     gap: 2,
+  },
+  chevron: {
+    fontSize: 24,
+    opacity: 0.3,
   },
   date: {
     fontSize: 17,

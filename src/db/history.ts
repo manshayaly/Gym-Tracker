@@ -1,5 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
+import type { WorkoutSet } from './types';
+
 export type WorkoutSummary = {
   id: string;
   /** Local calendar day, "YYYY-MM-DD". */
@@ -41,4 +43,45 @@ export async function getWorkoutSummaries(db: SQLiteDatabase) {
     summary.setCount += row.set_count;
   }
   return summaries;
+}
+
+export type WorkoutDetail = {
+  id: string;
+  date: string;
+  /** In the order they were done; each exercise's sets in set-number order. */
+  exercises: { exerciseId: string; name: string; sets: WorkoutSet[] }[];
+};
+
+/** One workout with all its (non-deleted) sets grouped by exercise, or null if not found. */
+export async function getWorkoutDetail(db: SQLiteDatabase, workoutId: string) {
+  const workout = await db.getFirstAsync<{ id: string; date: string }>(
+    'SELECT id, date FROM workouts WHERE id = ? AND deleted_at IS NULL',
+    workoutId
+  );
+  if (!workout) return null;
+
+  const rows = await db.getAllAsync<WorkoutSet & { name: string }>(
+    `SELECT s.*, e.name FROM workout_sets s
+     JOIN exercises e ON e.id = s.exercise_id
+     JOIN (
+       SELECT exercise_id, MIN(created_at) AS first_at FROM workout_sets
+       WHERE workout_id = ? AND deleted_at IS NULL
+       GROUP BY exercise_id
+     ) f ON f.exercise_id = s.exercise_id
+     WHERE s.workout_id = ? AND s.deleted_at IS NULL
+     ORDER BY f.first_at, s.exercise_id, s.set_number`,
+    workoutId,
+    workoutId
+  );
+
+  const detail: WorkoutDetail = { id: workout.id, date: workout.date, exercises: [] };
+  for (const { name, ...set } of rows) {
+    let group = detail.exercises.at(-1);
+    if (group?.exerciseId !== set.exercise_id) {
+      group = { exerciseId: set.exercise_id, name, sets: [] };
+      detail.exercises.push(group);
+    }
+    group.sets.push(set);
+  }
+  return detail;
 }

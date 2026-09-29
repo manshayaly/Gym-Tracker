@@ -29,6 +29,20 @@ export function formatDayLabel(day: string, now: Date = new Date()) {
   });
 }
 
+/**
+ * Long label for a "YYYY-MM-DD" local day, e.g. "Tuesday, September 29", with
+ * the year added when it isn't the current year.
+ */
+export function formatLongDayLabel(day: string, now: Date = new Date()) {
+  const [y, m, d] = day.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: y === now.getFullYear() ? undefined : 'numeric',
+  });
+}
+
 /** Month heading for a "YYYY-MM-DD" local day, e.g. "September 2026". */
 export function formatMonthLabel(day: string) {
   const [y, m] = day.split('-').map(Number);
