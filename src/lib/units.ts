@@ -7,6 +7,11 @@ export function formatWeight(kg: number) {
   return `${Number(kg.toFixed(2))} kg`;
 }
 
+/** A kg value as text for pre-filling the weight input, e.g. 62.5 → "62.5". */
+export function weightToInput(kg: number) {
+  return String(Number(kg.toFixed(2)));
+}
+
 /** Parses a typed weight, accepting "62.5" or "62,5". Null if not a valid weight. */
 export function parseWeightInput(text: string) {
   const normalized = text.trim().replace(',', '.');

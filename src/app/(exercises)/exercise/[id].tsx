@@ -6,10 +6,11 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { SetRow } from '@/components/set-row';
 import { getExerciseById } from '@/db/exercises';
 import type { Exercise, WorkoutSet } from '@/db/types';
-import { getSetsForDay, logSet } from '@/db/workouts';
-import { localDate } from '@/lib/dates';
+import { getLastPerformance, getSetsForDay, logSet } from '@/db/workouts';
+import { formatDayLabel, localDate } from '@/lib/dates';
 import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from '@/lib/labels';
-import { parseRepsInput, parseWeightInput } from '@/lib/units';
+import { pickPrefillSet } from '@/lib/prefill';
+import { parseRepsInput, parseWeightInput, weightToInput } from '@/lib/units';
 
 export default function ExerciseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -18,14 +19,30 @@ export default function ExerciseDetailScreen() {
   // undefined = still loading, null = no exercise with this id
   const [exercise, setExercise] = useState<Exercise | null | undefined>(undefined);
   const [todaySets, setTodaySets] = useState<WorkoutSet[]>([]);
+  const [lastTime, setLastTime] = useState<{ date: string; sets: WorkoutSet[] } | null>(null);
   const [weightText, setWeightText] = useState('');
   const [repsText, setRepsText] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getExerciseById(db, id).then(setExercise);
-    getSetsForDay(db, id, localDate()).then(setTodaySets);
+    async function load() {
+      const today = localDate();
+      const [loadedExercise, loadedToday, loadedLastTime] = await Promise.all([
+        getExerciseById(db, id),
+        getSetsForDay(db, id, today),
+        getLastPerformance(db, id, today),
+      ]);
+      setTodaySets(loadedToday);
+      setLastTime(loadedLastTime);
+      const prefill = pickPrefillSet(loadedToday, loadedLastTime?.sets ?? []);
+      if (prefill) {
+        setWeightText(weightToInput(prefill.weight_kg));
+        setRepsText(String(prefill.reps));
+      }
+      setExercise(loadedExercise);
+    }
+    load();
   }, [db, id]);
 
   const weightKg = parseWeightInput(weightText);
@@ -79,6 +96,17 @@ export default function ExerciseDetailScreen() {
         <Tag label={MUSCLE_GROUP_LABELS[exercise.muscle_group]} />
         <Tag label={EQUIPMENT_LABELS[exercise.equipment]} />
       </View>
+
+      {lastTime && (
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {formatDayLabel(lastTime.date).toUpperCase()}
+          </Text>
+          {lastTime.sets.map((set) => (
+            <SetRow key={set.id} set={set} />
+          ))}
+        </View>
+      )}
 
       <View style={styles.form}>
         <View style={styles.field}>
@@ -165,6 +193,11 @@ const styles = StyleSheet.create({
   },
   tagLabel: {
     fontSize: 14,
+  },
+  card: {
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
   },
   form: {
     flexDirection: 'row',

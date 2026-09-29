@@ -13,3 +13,18 @@ export function localDate(date: Date = new Date()) {
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }
+
+/**
+ * Human label for a "YYYY-MM-DD" local day, e.g. "Thu, Sep 24", with the year
+ * added when it isn't the current year ("Thu, Sep 24, 2025").
+ */
+export function formatDayLabel(day: string, now: Date = new Date()) {
+  const [y, m, d] = day.split('-').map(Number);
+  const date = new Date(y, m - 1, d); // local midnight — no UTC shift
+  return date.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: y === now.getFullYear() ? undefined : 'numeric',
+  });
+}
