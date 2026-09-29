@@ -6,7 +6,13 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import { SetRow } from '@/components/set-row';
 import { getExerciseById } from '@/db/exercises';
 import type { Exercise, WorkoutSet } from '@/db/types';
-import { deleteSet, getLastPerformance, getSetsForDay, logSet } from '@/db/workouts';
+import {
+  deleteSet,
+  getLastPerformance,
+  getPersonalBest,
+  getSetsForDay,
+  logSet,
+} from '@/db/workouts';
 import { formatDayLabel, localDate } from '@/lib/dates';
 import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from '@/lib/labels';
 import { pickPrefillSet } from '@/lib/prefill';
@@ -20,6 +26,7 @@ export default function ExerciseDetailScreen() {
   const [exercise, setExercise] = useState<Exercise | null | undefined>(undefined);
   const [todaySets, setTodaySets] = useState<WorkoutSet[]>([]);
   const [lastTime, setLastTime] = useState<{ date: string; sets: WorkoutSet[] } | null>(null);
+  const [best, setBest] = useState<{ weight_kg: number; reps: number; date: string } | null>(null);
   const [weightText, setWeightText] = useState('');
   const [repsText, setRepsText] = useState('');
   // Previous numbers, shown as grey placeholder hints so the boxes stay empty to type into.
@@ -30,13 +37,15 @@ export default function ExerciseDetailScreen() {
   useEffect(() => {
     async function load() {
       const today = localDate();
-      const [loadedExercise, loadedToday, loadedLastTime] = await Promise.all([
+      const [loadedExercise, loadedToday, loadedLastTime, loadedBest] = await Promise.all([
         getExerciseById(db, id),
         getSetsForDay(db, id, today),
         getLastPerformance(db, id, today),
+        getPersonalBest(db, id),
       ]);
       setTodaySets(loadedToday);
       setLastTime(loadedLastTime);
+      setBest(loadedBest);
       const previous = pickPrefillSet(loadedToday, loadedLastTime?.sets ?? []);
       if (previous) {
         setHint({ weight: weightToInput(previous.weight_kg), reps: String(previous.reps) });
@@ -59,6 +68,7 @@ export default function ExerciseDetailScreen() {
       const date = localDate();
       await logSet(db, { exerciseId: id, weightKg, reps, date });
       setTodaySets(await getSetsForDay(db, id, date));
+      setBest(await getPersonalBest(db, id));
       setHint({ weight: weightToInput(weightKg), reps: String(reps) });
       setWeightText('');
       setRepsText('');
@@ -80,6 +90,7 @@ export default function ExerciseDetailScreen() {
           try {
             await deleteSet(db, set.id);
             setTodaySets(await getSetsForDay(db, id, localDate()));
+            setBest(await getPersonalBest(db, id));
           } catch {
             setError("Couldn't delete the set. Please try again.");
           }
@@ -119,6 +130,16 @@ export default function ExerciseDetailScreen() {
         <Tag label={MUSCLE_GROUP_LABELS[exercise.muscle_group]} />
         <Tag label={EQUIPMENT_LABELS[exercise.equipment]} />
       </View>
+
+      {best && (
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>🏆 PERSONAL BEST</Text>
+          <Text style={[styles.bestValue, { color: colors.text }]}>
+            {best.weight_kg === 0 ? 'Bodyweight' : formatWeight(best.weight_kg)} × {best.reps}
+            <Text style={styles.bestDate}> · {formatDayLabel(best.date)}</Text>
+          </Text>
+        </View>
+      )}
 
       {lastTime && (
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -228,6 +249,16 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
+  },
+  bestValue: {
+    fontSize: 20,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+  },
+  bestDate: {
+    fontSize: 15,
+    fontWeight: '400',
+    opacity: 0.6,
   },
   form: {
     flexDirection: 'row',

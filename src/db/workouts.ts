@@ -152,3 +152,20 @@ export async function deleteSet(db: SQLiteDatabase, setId: string) {
     }
   });
 }
+
+/**
+ * The all-time best set for an exercise (today included): heaviest weight,
+ * then most reps at that weight, then the earliest day it was done. For an
+ * exercise only ever logged at 0 kg this is simply the most reps.
+ * Null if the exercise has never been logged.
+ */
+export function getPersonalBest(db: SQLiteDatabase, exerciseId: string) {
+  return db.getFirstAsync<{ weight_kg: number; reps: number; date: string }>(
+    `SELECT s.weight_kg, s.reps, w.date FROM workout_sets s
+     JOIN workouts w ON w.id = s.workout_id
+     WHERE s.exercise_id = ? AND s.deleted_at IS NULL AND w.deleted_at IS NULL
+     ORDER BY s.weight_kg DESC, s.reps DESC, w.date ASC, s.created_at ASC
+     LIMIT 1`,
+    exerciseId
+  );
+}

@@ -16,8 +16,10 @@ product later — so keep the data model clean even though there's no backend ye
    that exact exercise right on the entry screen (this is what drives
    progressive overload).
 3. **Workout history**: list of past workouts, each showing exercises/sets done.
-4. **Progress view**: per-exercise chart of top weight over time, and flag new
-   personal records.
+4. **Personal best**: when an exercise is opened, show its all-time best set
+   (heaviest weight; ties → most reps; 0 kg bodyweight-only → most reps).
+   No Progress tab, per-exercise charts, or PR badges — the user decided
+   these aren't needed.
 5. **Bodyweight log**: simple date + weight entries with a trend line.
 
 Explicitly NOT in MVP: user accounts, cloud sync, social features, custom
