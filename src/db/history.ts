@@ -97,3 +97,12 @@ export async function getDaySummary(db: SQLiteDatabase, date: string) {
   );
   return { exerciseCount: row?.exercise_count ?? 0, setCount: row?.set_count ?? 0 };
 }
+
+/** The workout for one local day with its sets grouped by exercise, or null if none. */
+export async function getWorkoutDetailForDate(db: SQLiteDatabase, date: string) {
+  const workout = await db.getFirstAsync<{ id: string }>(
+    'SELECT id FROM workouts WHERE date = ? AND deleted_at IS NULL',
+    date
+  );
+  return workout ? getWorkoutDetail(db, workout.id) : null;
+}

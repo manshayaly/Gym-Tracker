@@ -34,3 +34,17 @@ export function parseRepsInput(text: string) {
   const reps = Number(trimmed);
   return reps >= 1 ? reps : null;
 }
+
+/**
+ * A list of sets on one line, grouping consecutive sets at the same weight:
+ * [60×8, 60×8, 62.5×6] → "60 kg × 8, 8 · 62.5 kg × 6".
+ */
+export function formatSetsCompact(sets: readonly { weight_kg: number; reps: number }[]) {
+  const groups: { weightKg: number; reps: number[] }[] = [];
+  for (const set of sets) {
+    const last = groups.at(-1);
+    if (last && last.weightKg === set.weight_kg) last.reps.push(set.reps);
+    else groups.push({ weightKg: set.weight_kg, reps: [set.reps] });
+  }
+  return groups.map((g) => `${formatWeight(g.weightKg)} × ${g.reps.join(', ')}`).join(' · ');
+}
