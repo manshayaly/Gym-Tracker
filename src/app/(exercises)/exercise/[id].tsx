@@ -17,11 +17,13 @@ import { formatDayLabel, localDate } from '@/lib/dates';
 import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from '@/lib/labels';
 import { pickPrefillSet } from '@/lib/prefill';
 import { formatWeight, parseRepsInput, parseWeightInput, weightToInput } from '@/lib/units';
+import { useAppColors } from '@/theme';
 
 export default function ExerciseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const db = useSQLiteContext();
   const { colors } = useTheme();
+  const appColors = useAppColors();
   // undefined = still loading, null = no exercise with this id
   const [exercise, setExercise] = useState<Exercise | null | undefined>(undefined);
   const [todaySets, setTodaySets] = useState<WorkoutSet[]>([]);
@@ -184,7 +186,7 @@ export default function ExerciseDetailScreen() {
         onPress={handleSave}
         style={({ pressed }) => [
           styles.button,
-          { backgroundColor: colors.primary, opacity: !canSave ? 0.4 : pressed ? 0.7 : 1 },
+          { backgroundColor: appColors.accent, opacity: !canSave ? 0.4 : pressed ? 0.7 : 1 },
         ]}>
         <Text style={styles.buttonLabel}>Save set</Text>
       </Pressable>

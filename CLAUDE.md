@@ -63,9 +63,25 @@ routines/programs, rest timers, progress photos.
   and flag anything I need to test manually on my phone.
 
 ## Design
-The visual style follows DESIGN.md (a web design system; see the
-"App adaptation" decisions below once approved). Don't use the source
-brand's name, logo, or proprietary font in the app.
+The visual style follows DESIGN.md, a *web* design system adapted for the
+app as follows (approved by the user). All colors, fonts and text styles
+live in one shared theme file — screens never hard-code them.
+- Don't use the source brand's name, logo, or proprietary font (Sequel).
+- Font: **Avenir Next** (built into iOS), weight 400 everywhere — including
+  big numbers. Hierarchy comes from size and letter-spacing, not bold.
+- Light mode: canvas #f4f4f4, black text, muted #595959. Dark mode: page
+  #1c1f2a, cards #292b35, off-white text, and a lighter muted grey than the
+  guide's (#595959 is unreadable on charcoal).
+- Red #ba0816 (pressed #8e0d25) **only** on primary actions (Save set,
+  Save weight). Selected chips/secondary emphasis use black (light) or
+  off-white (dark). No emoji decorations (no 🏆).
+- 0px corners on buttons, inputs, cards, chips and tags.
+- Section titles, field labels and button text: 11–14px uppercase with
+  1.5px letter-spacing.
+- "Hover" states in the guide become pressed states.
+- Bodyweight chart: trend line black/off-white; red only for the press marker.
+- Native iOS parts (tab bar, search field, alerts) stay standard; only
+  tint colors are adjusted.
 
 @DESIGN.md
 @AGENTS.md

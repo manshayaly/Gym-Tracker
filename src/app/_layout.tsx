@@ -1,17 +1,21 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { ThemeProvider } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { SQLiteProvider } from 'expo-sqlite';
 import { useColorScheme } from 'react-native';
 
 import { migrateDbIfNeeded } from '@/db/migrations';
+import { FONT_FAMILY, navigationTheme, useAppColors } from '@/theme';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const colors = useAppColors();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={navigationTheme(colorScheme === 'dark' ? 'dark' : 'light')}>
       <SQLiteProvider databaseName="gym-tracker.db" onInit={migrateDbIfNeeded}>
-        <NativeTabs>
+        <NativeTabs
+          tintColor={colors.text}
+          labelStyle={{ fontFamily: FONT_FAMILY }}>
           <NativeTabs.Trigger name="(exercises)">
             <NativeTabs.Trigger.Label>Exercises</NativeTabs.Trigger.Label>
             <NativeTabs.Trigger.Icon sf="dumbbell.fill" />

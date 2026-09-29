@@ -1,17 +1,19 @@
-import { Link, Stack, useTheme } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { FilterChips } from '@/components/filter-chips';
+import { Label } from '@/components/ui/label';
 import { getAllExercises } from '@/db/exercises';
 import { EQUIPMENT, MUSCLE_GROUPS, type Equipment, type Exercise, type MuscleGroup } from '@/db/types';
 import { filterExercises } from '@/lib/filter-exercises';
 import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from '@/lib/labels';
+import { spacing, type, useAppColors } from '@/theme';
 
 export default function ExercisesScreen() {
   const db = useSQLiteContext();
-  const { colors } = useTheme();
+  const colors = useAppColors();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [query, setQuery] = useState('');
   const [muscleGroup, setMuscleGroup] = useState<MuscleGroup | null>(null);
@@ -57,20 +59,22 @@ export default function ExercisesScreen() {
         }
         ListEmptyComponent={
           exercises.length > 0 ? (
-            <Text style={[styles.empty, { color: colors.text }]}>No exercises match.</Text>
+            <Text style={[type.body, styles.empty, { color: colors.textMuted }]}>
+              No exercises match.
+            </Text>
           ) : null
         }
         ItemSeparatorComponent={() => (
-          <View style={[styles.separator, { backgroundColor: colors.border }]} />
+          <View style={[styles.separator, { backgroundColor: colors.separator }]} />
         )}
         renderItem={({ item }) => (
           <Link href={{ pathname: '/exercise/[id]', params: { id: item.id } }} asChild>
             <Pressable
-              style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.border }]}>
-              <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
-              <Text style={[styles.details, { color: colors.text }]}>
+              style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.pressed }]}>
+              <Text style={[type.body, { color: colors.text }]}>{item.name}</Text>
+              <Label>
                 {MUSCLE_GROUP_LABELS[item.muscle_group]} · {EQUIPMENT_LABELS[item.equipment]}
-              </Text>
+              </Label>
             </Pressable>
           </Link>
         )}
@@ -81,29 +85,20 @@ export default function ExercisesScreen() {
 
 const styles = StyleSheet.create({
   filters: {
-    gap: 8,
-    paddingVertical: 8,
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
   },
   row: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 2,
-  },
-  name: {
-    fontSize: 17,
-  },
-  details: {
-    fontSize: 14,
-    opacity: 0.6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 14,
+    gap: spacing.xs,
   },
   separator: {
     height: StyleSheet.hairlineWidth,
-    marginLeft: 16,
+    marginLeft: spacing.md,
   },
   empty: {
     textAlign: 'center',
     marginTop: 32,
-    fontSize: 16,
-    opacity: 0.6,
   },
 });

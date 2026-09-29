@@ -14,10 +14,12 @@ import type { BodyweightEntry } from '@/db/types';
 import { formatDayLabel, localDate } from '@/lib/dates';
 import { buildChartPoints } from '@/lib/trend';
 import { formatWeight, formatWeightChange, parseWeightInput, weightToInput } from '@/lib/units';
+import { useAppColors } from '@/theme';
 
 export default function BodyScreen() {
   const db = useSQLiteContext();
   const { colors } = useTheme();
+  const appColors = useAppColors();
   // null = not loaded yet, so the empty message doesn't flash before data arrives
   const [entries, setEntries] = useState<BodyweightEntry[] | null>(null);
   const [weightText, setWeightText] = useState('');
@@ -107,7 +109,7 @@ export default function BodyScreen() {
               onPress={handleSave}
               style={({ pressed }) => [
                 styles.button,
-                { backgroundColor: colors.primary, opacity: !canSave ? 0.4 : pressed ? 0.7 : 1 },
+                { backgroundColor: appColors.accent, opacity: !canSave ? 0.4 : pressed ? 0.7 : 1 },
               ]}>
               <Text style={styles.buttonLabel}>{hasToday ? 'Update' : 'Save'}</Text>
             </Pressable>

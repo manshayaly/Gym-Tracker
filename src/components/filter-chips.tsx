@@ -1,5 +1,6 @@
-import { useTheme } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+
+import { spacing, type, useAppColors } from '@/theme';
 
 type Props<T extends string> = {
   options: readonly T[];
@@ -10,7 +11,7 @@ type Props<T extends string> = {
 };
 
 export function FilterChips<T extends string>({ options, labels, selected, onChange }: Props<T>) {
-  const { colors } = useTheme();
+  const colors = useAppColors();
 
   return (
     <ScrollView
@@ -25,13 +26,16 @@ export function FilterChips<T extends string>({ options, labels, selected, onCha
             accessibilityRole="button"
             accessibilityState={{ selected: isSelected }}
             onPress={() => onChange(isSelected ? null : option)}
-            style={[
+            style={({ pressed }) => [
               styles.chip,
               isSelected
-                ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                : { backgroundColor: colors.card, borderColor: colors.border },
+                ? { backgroundColor: colors.inkFill, borderColor: colors.inkFill }
+                : {
+                    backgroundColor: pressed ? colors.pressed : colors.surface,
+                    borderColor: colors.border,
+                  },
             ]}>
-            <Text style={[styles.label, { color: isSelected ? '#fff' : colors.text }]}>
+            <Text style={[type.label, { color: isSelected ? colors.onInkFill : colors.text }]}>
               {labels[option]}
             </Text>
           </Pressable>
@@ -43,16 +47,12 @@ export function FilterChips<T extends string>({ options, labels, selected, onCha
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
   },
   chip: {
     paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 16,
+    paddingVertical: 9,
     borderWidth: StyleSheet.hairlineWidth,
-  },
-  label: {
-    fontSize: 15,
   },
 });
