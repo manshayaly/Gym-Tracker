@@ -1,7 +1,7 @@
 import type { WorkoutSet } from '@/db/types';
 
 /**
- * Which set to pre-fill the weight/reps inputs from: the latest set logged
+ * Which set to show as the grey hint in the weight/reps inputs: the latest set logged
  * today, otherwise the first set from last time, otherwise nothing.
  */
 export function pickPrefillSet(todaySets: readonly WorkoutSet[], lastTimeSets: readonly WorkoutSet[]) {

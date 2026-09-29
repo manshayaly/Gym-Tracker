@@ -7,7 +7,7 @@ export function formatWeight(kg: number) {
   return `${Number(kg.toFixed(2))} kg`;
 }
 
-/** A kg value as text for pre-filling the weight input, e.g. 62.5 → "62.5". */
+/** A kg value as plain text for the weight input or its hint, e.g. 62.5 → "62.5". */
 export function weightToInput(kg: number) {
   return String(Number(kg.toFixed(2)));
 }

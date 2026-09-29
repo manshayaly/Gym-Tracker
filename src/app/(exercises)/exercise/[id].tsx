@@ -1,16 +1,16 @@
 import { Stack, useLocalSearchParams, useTheme } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { SetRow } from '@/components/set-row';
 import { getExerciseById } from '@/db/exercises';
 import type { Exercise, WorkoutSet } from '@/db/types';
-import { getLastPerformance, getSetsForDay, logSet } from '@/db/workouts';
+import { deleteSet, getLastPerformance, getSetsForDay, logSet } from '@/db/workouts';
 import { formatDayLabel, localDate } from '@/lib/dates';
 import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from '@/lib/labels';
 import { pickPrefillSet } from '@/lib/prefill';
-import { parseRepsInput, parseWeightInput, weightToInput } from '@/lib/units';
+import { formatWeight, parseRepsInput, parseWeightInput, weightToInput } from '@/lib/units';
 
 export default function ExerciseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,6 +22,8 @@ export default function ExerciseDetailScreen() {
   const [lastTime, setLastTime] = useState<{ date: string; sets: WorkoutSet[] } | null>(null);
   const [weightText, setWeightText] = useState('');
   const [repsText, setRepsText] = useState('');
+  // Previous numbers, shown as grey placeholder hints so the boxes stay empty to type into.
+  const [hint, setHint] = useState<{ weight: string; reps: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,10 +37,9 @@ export default function ExerciseDetailScreen() {
       ]);
       setTodaySets(loadedToday);
       setLastTime(loadedLastTime);
-      const prefill = pickPrefillSet(loadedToday, loadedLastTime?.sets ?? []);
-      if (prefill) {
-        setWeightText(weightToInput(prefill.weight_kg));
-        setRepsText(String(prefill.reps));
+      const previous = pickPrefillSet(loadedToday, loadedLastTime?.sets ?? []);
+      if (previous) {
+        setHint({ weight: weightToInput(previous.weight_kg), reps: String(previous.reps) });
       }
       setExercise(loadedExercise);
     }
@@ -58,11 +59,33 @@ export default function ExerciseDetailScreen() {
       const date = localDate();
       await logSet(db, { exerciseId: id, weightKg, reps, date });
       setTodaySets(await getSetsForDay(db, id, date));
+      setHint({ weight: weightToInput(weightKg), reps: String(reps) });
+      setWeightText('');
+      setRepsText('');
     } catch {
       setError("Couldn't save the set. Please try again.");
     } finally {
       setSaving(false);
     }
+  }
+
+  function confirmDelete(set: WorkoutSet) {
+    Alert.alert(`Delete set ${set.set_number}?`, `${formatWeight(set.weight_kg)} × ${set.reps}`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          setError(null);
+          try {
+            await deleteSet(db, set.id);
+            setTodaySets(await getSetsForDay(db, id, localDate()));
+          } catch {
+            setError("Couldn't delete the set. Please try again.");
+          }
+        },
+      },
+    ]);
   }
 
   if (exercise === undefined) return null;
@@ -115,7 +138,7 @@ export default function ExerciseDetailScreen() {
             value={weightText}
             onChangeText={setWeightText}
             keyboardType="decimal-pad"
-            placeholder="0"
+            placeholder={hint?.weight ?? '0'}
             placeholderTextColor="#8e8e93"
             style={inputStyle}
             accessibilityLabel="Weight in kilograms"
@@ -127,7 +150,7 @@ export default function ExerciseDetailScreen() {
             value={repsText}
             onChangeText={setRepsText}
             keyboardType="number-pad"
-            placeholder="0"
+            placeholder={hint?.reps ?? '0'}
             placeholderTextColor="#8e8e93"
             style={inputStyle}
             accessibilityLabel="Reps"
@@ -151,7 +174,14 @@ export default function ExerciseDetailScreen() {
         {todaySets.length === 0 ? (
           <Text style={[styles.muted, { color: colors.text }]}>No sets yet today.</Text>
         ) : (
-          todaySets.map((set) => <SetRow key={set.id} set={set} />)
+          <>
+            {todaySets.map((set) => (
+              <SetRow key={set.id} set={set} onLongPress={() => confirmDelete(set)} />
+            ))}
+            <Text style={[styles.hint, { color: colors.text }]}>
+              Press and hold a set to delete it
+            </Text>
+          </>
         )}
       </View>
     </ScrollView>
@@ -241,5 +271,10 @@ const styles = StyleSheet.create({
   muted: {
     fontSize: 16,
     opacity: 0.6,
+  },
+  hint: {
+    fontSize: 13,
+    opacity: 0.45,
+    marginTop: 8,
   },
 });
